@@ -2,7 +2,7 @@ package routes
 
 import (
 	"fmt"
-	"scaler/internal/components"
+	"k8s-home/internal/components"
 
 	"github.com/gofiber/fiber/v2"
 )

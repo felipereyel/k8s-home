@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"scaler/internal/config"
-	"scaler/internal/services"
+	"k8s-home/internal/config"
+	"k8s-home/internal/services"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"

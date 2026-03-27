@@ -2,7 +2,7 @@ package kubeclient
 
 import (
 	"path/filepath"
-	"scaler/internal/config"
+	"k8s-home/internal/config"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"

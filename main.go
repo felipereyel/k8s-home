@@ -1,7 +1,7 @@
 package main
 
 import (
-	"scaler/internal/server"
+	"k8s-home/internal/server"
 )
 
 func main() {

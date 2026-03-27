@@ -1,9 +1,9 @@
 package server
 
 import (
-	"scaler/internal/config"
-	"scaler/internal/routes"
-	"scaler/internal/services"
+	"k8s-home/internal/config"
+	"k8s-home/internal/routes"
+	"k8s-home/internal/services"
 )
 
 func SetupAndListen() error {

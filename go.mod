@@ -1,4 +1,4 @@
-module scaler
+module k8s-home
 
 go 1.25.4
 

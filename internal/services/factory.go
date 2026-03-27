@@ -1,8 +1,8 @@
 package services
 
 import (
-	"scaler/internal/config"
-	"scaler/internal/services/kubeclient"
+	"k8s-home/internal/config"
+	"k8s-home/internal/services/kubeclient"
 )
 
 type Services struct {

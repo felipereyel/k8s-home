@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"scaler/internal/components"
-	"scaler/internal/services"
-	"scaler/internal/utils"
+	"k8s-home/internal/components"
+	"k8s-home/internal/services"
+	"k8s-home/internal/utils"
 
 	"github.com/gofiber/fiber/v2"
 	v1 "k8s.io/api/apps/v1"

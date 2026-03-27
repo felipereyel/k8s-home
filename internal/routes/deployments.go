@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"scaler/internal/components"
-	"scaler/internal/services"
+	"k8s-home/internal/components"
+	"k8s-home/internal/services"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"

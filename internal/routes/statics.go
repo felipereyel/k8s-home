@@ -2,7 +2,7 @@ package routes
 
 import (
 	"net/http"
-	"scaler/internal/embeded"
+	"k8s-home/internal/embeded"
 
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 )
