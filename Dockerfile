@@ -1,5 +1,5 @@
 # Build the Go binary
-FROM golang:1.23-alpine AS goapp
+FROM golang:1.25-alpine AS goapp
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN make all
 RUN go build -o ./goapp
 
 # Build the final image
-FROM alpine:latest as release
+FROM alpine:latest AS release
 COPY --from=goapp /app/goapp /goapp
 
 WORKDIR /app
