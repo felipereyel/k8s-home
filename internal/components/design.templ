@@ -4,7 +4,10 @@ import (
 	"scaler/internal/utils"
 
 	"strconv"
+	"strings"
 	v1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 )
 
 templ rawPage(title string) {
@@ -87,6 +90,21 @@ func scaleDotClass(app utils.App) string {
     return "bg-red-500"
 }
 
+func servicePorts(svc *corev1.Service) string {
+    if svc == nil {
+        return ""
+    }
+    var ports []string
+    for _, p := range svc.Spec.Ports {
+        portStr := strconv.Itoa(int(p.Port))
+        if p.TargetPort.String() != "" {
+            portStr += ":" + p.TargetPort.String()
+        }
+        ports = append(ports, portStr)
+    }
+    return strings.Join(ports, ", ")
+}
+
 templ AppCard(app utils.App) {
     <div class={ "relative rounded-lg p-4 border-2 transition hover:scale-105 " + cardBgClass(app) }>
         <div class={ "absolute top-2 right-2 w-3 h-3 rounded-full " + scaleDotClass(app) }></div>
@@ -125,7 +143,7 @@ templ AppCard(app utils.App) {
 }
 
 
-templ DeploymentDetailsPage(deployment *v1.Deployment) {
+templ DeploymentDetailsPage(deployment *v1.Deployment, svc *corev1.Service, ingresses []networkingv1.Ingress) {
     @rawPage("Deployment Details") {
         <div class="px-4 sm:px-8 max-w-5xl m-auto pt-2">
             <div class="flex flex-col">
@@ -170,6 +188,34 @@ templ DeploymentDetailsPage(deployment *v1.Deployment) {
                             </tr>
                             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                 <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    Network
+                                </th>
+                                <th scope="row" class="px-6 py-4 text-right font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    if svc != nil {
+                                        { servicePorts(svc) }
+                                    }
+                                </th>
+                            </tr>
+                            if len(ingresses) > 0 {
+                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                        Ingresses
+                                    </th>
+                                    <th scope="row" class="px-6 py-4 text-right font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                        <div class="flex flex-col items-end gap-1">
+                                            for _, ing := range ingresses {
+                                                for _, rule := range ing.Spec.Rules {
+                                                    if rule.Host != "" {
+                                                        <a href={ templ.URL("https://" + rule.Host) } target="_blank" class="text-cyan-400 hover:text-cyan-300">{ rule.Host }</a>
+                                                    }
+                                                }
+                                            }
+                                        </div>
+                                    </th>
+                                </tr>
+                            }
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     Scale
                                 </th>
                                 <th scope="row" class="px-6 py-4 text-right font-medium text-gray-900 whitespace-nowrap dark:text-white">
@@ -187,7 +233,7 @@ templ DeploymentDetailsPage(deployment *v1.Deployment) {
     }
 }
 
-templ StatefulsetDetailsPage(statefulset *v1.StatefulSet) {
+templ StatefulsetDetailsPage(statefulset *v1.StatefulSet, svc *corev1.Service, ingresses []networkingv1.Ingress) {
     @rawPage("StatefulSet Details") {
         <div class="px-4 sm:px-8 max-w-5xl m-auto pt-2">
             <div class="flex flex-col">
@@ -230,6 +276,34 @@ templ StatefulsetDetailsPage(statefulset *v1.StatefulSet) {
                                     {strconv.Itoa(int(statefulset.Status.Replicas))}
                                 </th>
                             </tr>
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    Network
+                                </th>
+                                <th scope="row" class="px-6 py-4 text-right font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    if svc != nil {
+                                        { servicePorts(svc) }
+                                    }
+                                </th>
+                            </tr>
+                            if len(ingresses) > 0 {
+                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                        Ingresses
+                                    </th>
+                                    <th scope="row" class="px-6 py-4 text-right font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                        <div class="flex flex-col items-end gap-1">
+                                            for _, ing := range ingresses {
+                                                for _, rule := range ing.Spec.Rules {
+                                                    if rule.Host != "" {
+                                                        <a href={ templ.URL("https://" + rule.Host) } target="_blank" class="text-cyan-400 hover:text-cyan-300">{ rule.Host }</a>
+                                                    }
+                                                }
+                                            }
+                                        </div>
+                                    </th>
+                                </tr>
+                            }
                             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                 <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     Scale

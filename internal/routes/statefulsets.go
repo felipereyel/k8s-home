@@ -5,6 +5,7 @@ import (
 	"scaler/internal/services"
 
 	"github.com/gofiber/fiber/v2"
+	networkingv1 "k8s.io/api/networking/v1"
 )
 
 func statefulsetsDetails(svcs *services.Services, c *fiber.Ctx) error {
@@ -17,7 +18,17 @@ func statefulsetsDetails(svcs *services.Services, c *fiber.Ctx) error {
 		return err
 	}
 
-	return sendPage(c, components.StatefulsetDetailsPage(s))
+	svc, err := findStatefulSetServiceForApp(svcs, namespace, name)
+	if err != nil {
+		svc = nil
+	}
+
+	var ingresses []networkingv1.Ingress
+	if svc != nil {
+		ingresses = svcs.KubeClient.GetIngressForService(namespace, svc.Name)
+	}
+
+	return sendPage(c, components.StatefulsetDetailsPage(s, svc, ingresses))
 }
 
 func statefulsetsToggle(svcs *services.Services, c *fiber.Ctx) error {

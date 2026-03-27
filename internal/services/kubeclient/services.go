@@ -14,3 +14,7 @@ func (kubeclient *KubeClient) ListServices() ([]corev1.Service, error) {
 	}
 	return serviceList.Items, nil
 }
+
+func (kubeclient *KubeClient) GetService(namespace, name string) (*corev1.Service, error) {
+	return kubeclient.clientset.CoreV1().Services(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+}
