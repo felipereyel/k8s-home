@@ -4,7 +4,6 @@ FROM golang:1.25-alpine AS goapp
 WORKDIR /app
 
 RUN apk add --no-cache make curl
-RUN go install github.com/a-h/templ/cmd/templ@latest
 
 COPY Makefile go.mod go.sum ./
 RUN go mod download

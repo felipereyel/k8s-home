@@ -5,4 +5,7 @@ statics:
 	curl https://unpkg.com/htmx.org@1.9.12/dist/htmx.min.js --output internal/embeded/statics/htmx.js
 
 templ:
-	templ generate
+	go tool templ generate
+
+dev:
+	go tool air
