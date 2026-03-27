@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"strconv"
 	"strings"
 
 	v1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 )
 
@@ -15,11 +17,12 @@ const (
 )
 
 type App struct {
-	Name      string
-	Namespace string
-	Type      AppType
-	Replicas  int32
-	Ingresses []networkingv1.Ingress
+	Name        string
+	Namespace   string
+	Type        AppType
+	Replicas    int32
+	Ingresses   []networkingv1.Ingress
+	HostNetwork string
 }
 
 func NewAppFromDeployment(d v1.Deployment, ingresses []networkingv1.Ingress) *App {
@@ -27,12 +30,14 @@ func NewAppFromDeployment(d v1.Deployment, ingresses []networkingv1.Ingress) *Ap
 	if d.Spec.Replicas != nil {
 		replicas = *d.Spec.Replicas
 	}
+	hostNetwork := getHostNetwork(d.Spec.Template.Spec)
 	return &App{
-		Name:      d.Name,
-		Namespace: d.Namespace,
-		Type:      AppTypeDeployment,
-		Replicas:  replicas,
-		Ingresses: ingresses,
+		Name:        d.Name,
+		Namespace:   d.Namespace,
+		Type:        AppTypeDeployment,
+		Replicas:    replicas,
+		Ingresses:   ingresses,
+		HostNetwork: hostNetwork,
 	}
 }
 
@@ -41,13 +46,27 @@ func NewAppFromStatefulSet(s v1.StatefulSet, ingresses []networkingv1.Ingress) *
 	if s.Spec.Replicas != nil {
 		replicas = *s.Spec.Replicas
 	}
+	hostNetwork := getHostNetwork(s.Spec.Template.Spec)
 	return &App{
-		Name:      s.Name,
-		Namespace: s.Namespace,
-		Type:      AppTypeStatefulSet,
-		Replicas:  replicas,
-		Ingresses: ingresses,
+		Name:        s.Name,
+		Namespace:   s.Namespace,
+		Type:        AppTypeStatefulSet,
+		Replicas:    replicas,
+		Ingresses:   ingresses,
+		HostNetwork: hostNetwork,
 	}
+}
+
+func getHostNetwork(spec corev1.PodSpec) string {
+	if !spec.HostNetwork {
+		return ""
+	}
+	for _, c := range spec.Containers {
+		if len(c.Ports) > 0 {
+			return strconv.Itoa(int(c.Ports[0].ContainerPort))
+		}
+	}
+	return ""
 }
 
 func Int32Compare(a *int32, b int) bool {

@@ -3,6 +3,7 @@ package routes
 import (
 	"scaler/internal/components"
 	"scaler/internal/services"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	corev1 "k8s.io/api/core/v1"
@@ -29,7 +30,12 @@ func deploymentsDetails(svcs *services.Services, c *fiber.Ctx) error {
 		ingresses = svcs.KubeClient.GetIngressForService(namespace, svc.Name)
 	}
 
-	return sendPage(c, components.DeploymentDetailsPage(d, svc, ingresses))
+	var hostPorts []string
+	if d.Spec.Template.Spec.HostNetwork {
+		hostPorts = extractContainerPorts(d.Spec.Template.Spec.Containers)
+	}
+
+	return sendPage(c, components.DeploymentDetailsPage(d, hostPorts, ingresses))
 }
 
 func deploymentsToggle(svcs *services.Services, c *fiber.Ctx) error {
@@ -86,4 +92,17 @@ func findStatefulSetServiceForApp(svcs *services.Services, namespace, appName st
 		}
 	}
 	return nil, nil
+}
+
+func extractContainerPorts(containers []corev1.Container) []string {
+	var ports []string
+	for _, c := range containers {
+		for _, p := range c.Ports {
+			ports = append(ports, strconv.Itoa(int(p.ContainerPort)))
+		}
+	}
+	if len(ports) == 0 {
+		return nil
+	}
+	return ports
 }

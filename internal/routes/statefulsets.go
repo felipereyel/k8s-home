@@ -28,7 +28,12 @@ func statefulsetsDetails(svcs *services.Services, c *fiber.Ctx) error {
 		ingresses = svcs.KubeClient.GetIngressForService(namespace, svc.Name)
 	}
 
-	return sendPage(c, components.StatefulsetDetailsPage(s, svc, ingresses))
+	var hostPorts []string
+	if s.Spec.Template.Spec.HostNetwork {
+		hostPorts = extractContainerPorts(s.Spec.Template.Spec.Containers)
+	}
+
+	return sendPage(c, components.StatefulsetDetailsPage(s, hostPorts, ingresses))
 }
 
 func statefulsetsToggle(svcs *services.Services, c *fiber.Ctx) error {

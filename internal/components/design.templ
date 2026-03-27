@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 	v1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 )
 
@@ -90,17 +89,9 @@ func scaleDotClass(app utils.App) string {
     return "bg-red-500"
 }
 
-func servicePorts(svc *corev1.Service) string {
-    if svc == nil {
+func formatHostPorts(ports []string) string {
+    if ports == nil || len(ports) == 0 {
         return ""
-    }
-    var ports []string
-    for _, p := range svc.Spec.Ports {
-        portStr := strconv.Itoa(int(p.Port))
-        if p.TargetPort.String() != "" {
-            portStr += ":" + p.TargetPort.String()
-        }
-        ports = append(ports, portStr)
     }
     return strings.Join(ports, ", ")
 }
@@ -109,11 +100,14 @@ templ AppCard(app utils.App) {
     <div class={ "relative rounded-lg p-4 border-2 transition hover:scale-105 " + cardBgClass(app) }>
         <div class={ "absolute top-2 right-2 w-3 h-3 rounded-full " + scaleDotClass(app) }></div>
         
-        <div class="mb-2">
+        <div class="mb-2 flex gap-2 flex-wrap">
             if app.Type == utils.AppTypeStatefulSet {
                 <span class="inline-block bg-blue-800 text-xs px-2 py-1 rounded-full border border-blue-600">STS • { app.Namespace }</span>
             } else {
                 <span class="inline-block bg-purple-800 text-xs px-2 py-1 rounded-full border border-purple-600">DPL • { app.Namespace }</span>
+            }
+            if app.HostNetwork != "" {
+                <span class="inline-block bg-green-800 text-xs px-2 py-1 rounded-full border border-green-600">NetHost • { app.HostNetwork }</span>
             }
         </div>
         
@@ -143,7 +137,7 @@ templ AppCard(app utils.App) {
 }
 
 
-templ DeploymentDetailsPage(deployment *v1.Deployment, svc *corev1.Service, ingresses []networkingv1.Ingress) {
+templ DeploymentDetailsPage(deployment *v1.Deployment, hostPorts []string, ingresses []networkingv1.Ingress) {
     @rawPage("Deployment Details") {
         <div class="px-4 sm:px-8 max-w-5xl m-auto pt-2">
             <div class="flex flex-col">
@@ -186,16 +180,16 @@ templ DeploymentDetailsPage(deployment *v1.Deployment, svc *corev1.Service, ingr
                                     {strconv.Itoa(int(deployment.Status.Replicas))}
                                 </th>
                             </tr>
-                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    Network
-                                </th>
-                                <th scope="row" class="px-6 py-4 text-right font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    if svc != nil {
-                                        { servicePorts(svc) }
-                                    }
-                                </th>
-                            </tr>
+                            if hostPorts != nil && len(hostPorts) > 0 {
+                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                        Host Ports
+                                    </th>
+                                    <th scope="row" class="px-6 py-4 text-right font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                        { formatHostPorts(hostPorts) }
+                                    </th>
+                                </tr>
+                            }
                             if len(ingresses) > 0 {
                                 <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                     <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
@@ -233,7 +227,7 @@ templ DeploymentDetailsPage(deployment *v1.Deployment, svc *corev1.Service, ingr
     }
 }
 
-templ StatefulsetDetailsPage(statefulset *v1.StatefulSet, svc *corev1.Service, ingresses []networkingv1.Ingress) {
+templ StatefulsetDetailsPage(statefulset *v1.StatefulSet, hostPorts []string, ingresses []networkingv1.Ingress) {
     @rawPage("StatefulSet Details") {
         <div class="px-4 sm:px-8 max-w-5xl m-auto pt-2">
             <div class="flex flex-col">
@@ -276,16 +270,16 @@ templ StatefulsetDetailsPage(statefulset *v1.StatefulSet, svc *corev1.Service, i
                                     {strconv.Itoa(int(statefulset.Status.Replicas))}
                                 </th>
                             </tr>
-                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    Network
-                                </th>
-                                <th scope="row" class="px-6 py-4 text-right font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    if svc != nil {
-                                        { servicePorts(svc) }
-                                    }
-                                </th>
-                            </tr>
+                            if hostPorts != nil && len(hostPorts) > 0 {
+                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                        Host Ports
+                                    </th>
+                                    <th scope="row" class="px-6 py-4 text-right font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                        { formatHostPorts(hostPorts) }
+                                    </th>
+                                </tr>
+                            }
                             if len(ingresses) > 0 {
                                 <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                     <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
