@@ -153,7 +153,7 @@ templ AppCard(app utils.App) {
 
 templ DeploymentDetailsPage(deployment *v1.Deployment, hostPorts []string, ingresses []networkingv1.Ingress) {
     @rawPage("Deployment Details") {
-        <div class="px-4 sm:px-8 max-w-5xl m-auto pt-2">
+        <div class="px-4 sm:px-8 max-w-6xl m-auto pt-2">
             <div class="flex flex-col">
                 <div class="flex flex-row items-center gap-2">
                     <a href="/" class="text-4xl">Home</a>
@@ -244,7 +244,7 @@ templ DeploymentDetailsPage(deployment *v1.Deployment, hostPorts []string, ingre
 
 templ StatefulsetDetailsPage(statefulset *v1.StatefulSet, hostPorts []string, ingresses []networkingv1.Ingress) {
     @rawPage("StatefulSet Details") {
-        <div class="px-4 sm:px-8 max-w-5xl m-auto pt-2">
+        <div class="px-4 sm:px-8 max-w-6xl m-auto pt-2">
             <div class="flex flex-col">
                 <div class="flex flex-row items-center gap-2">
                     <a href="/" class="text-4xl">Home</a>
