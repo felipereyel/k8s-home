@@ -1,6 +1,6 @@
-# scaler
+# k8s-home
 
-Manually scale up or down your deployments and statefulsets
+A home dashboard for your Kubernetes cluster
 
 ## Requirements
 
@@ -17,55 +17,59 @@ Deploy the following manifest
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: scaler
+  name: k8s-home
   namespace: default
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: scaler-role
-  namespace: default
+  name: k8s-home-role
 rules:
   - apiGroups: ["apps"]
     resources: ["deployments", "statefulsets"]
     verbs: ["get", "list", "update"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses"]
+    verbs: ["get", "list"]
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: scaler-binding
-  namespace: default
+  name: k8s-home-binding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: scaler-role
+  name: k8s-home-role
 subjects:
   - kind: ServiceAccount
-    name: scaler
+    name: k8s-home
     namespace: default
 
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: scaler
+  name: k8s-home
 spec:
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: scaler
+      app: k8s-home
   template:
     metadata:
       labels:
-        app: scaler
+        app: k8s-home
     spec:
-      serviceAccountName: scaler
+      serviceAccountName: k8s-home
       containers:
-      - name: scaler
-        image: ghcr.io/felipereyel/k8s-manual-scaler:latest
+      - name: k8s-home
+        image: ghcr.io/felipereyel/k8s-home:latest
         env:
         - name: USE_SA
           value: "true"
